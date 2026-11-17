@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0F1419">
+<title>Lavoro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0F1419;--card:#1A2129;--line:#2D3741;--ink:#E6EDF3;--muted:#8B98A5;--blue:#79C0FF;--blueBg:#122D4A;--amber:#F5B544;--amberBg:#3A2A10;--green:#238636;--greenTx:#56D364;--field:#0B1015;--red:#FF7B72}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,sans-serif}
+  button,input{font:inherit;border:0}
+  button{cursor:pointer}
+  #app{height:100%;display:flex;flex-direction:column}
+
+  /* ----- PIN ----- */
+  .login{flex:1;display:grid;place-items:center;padding:24px}
+  .login .box{width:min(360px,100%);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 22px 20px}
+  .login h1{font-size:18px;font-weight:700;letter-spacing:.06em;margin-bottom:6px}
+  .login p{color:var(--muted);margin-bottom:16px}
+  .login input{width:100%;background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:700 18px 'JetBrains Mono',monospace;letter-spacing:.3em;outline:none}
+  .login input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(121,192,255,.15)}
+  .login .ok{width:100%;margin-top:6px;background:var(--green);color:#fff;padding:10px;border-radius:8px;font-weight:600}
+  .login .link{display:block;margin:12px auto 0;background:transparent;color:var(--muted);font-size:12px}
+  .login .link:hover{color:var(--ink)}
+
+  /* ----- barra in alto ----- */
+  header{display:flex;align-items:center;gap:16px;padding:14px 24px;border-bottom:1px solid var(--line)}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.06em}
+  header .d{color:var(--muted);font-size:13px}
+  header .sp{flex:1}
+  .ghost{background:transparent;color:var(--muted);border:1px solid var(--line);padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600}
+  .ghost:hover{color:var(--ink);border-color:var(--muted)}
+  .ghost.on{color:var(--ink);background:var(--card);border-color:var(--muted)}
+
+  /* ----- riepilogo ----- */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:18px 24px 6px}
+  .tile{background:var(--card);border-radius:12px;padding:12px 16px;display:flex;align-items:baseline;gap:10px}
+  .tile b{font:700 28px/1 'JetBrains Mono',monospace}
+  .tile span{color:var(--muted);font-size:13px}
+  .tile.warn{background:var(--amberBg)}
+  .tile.warn b{color:var(--amber)}
+
+  /* ----- colonne ----- */
+  main{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:12px 24px 24px;min-height:0}
+  .col{background:#141A20;border:1px solid #1F272F;border-radius:14px;display:flex;flex-direction:column;min-height:0}
+  .lh{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 8px 14px}
+  .lh span{font-size:13px;font-weight:600;color:var(--muted)}
+  .lh span i{font:700 12px 'JetBrains Mono',monospace;font-style:normal;color:var(--ink);margin-left:6px}
+  .plus{width:28px;height:28px;border-radius:8px;background:var(--green);color:#fff;font-size:18px;line-height:28px;text-align:center}
+  .plus:hover{filter:brightness(1.15)}
+  .items{overflow-y:auto;padding:0 10px 10px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  .vuoto{color:#5A6672;font-size:12.5px;padding:6px 4px 10px}
+  .it{display:flex;gap:10px;align-items:flex-start;cursor:pointer;background:var(--card);border-radius:10px;padding:10px 11px;margin-bottom:6px;border-left:3px solid transparent;user-select:none}
+  .it:hover{background:#202933}
+  .it.r{border-left-color:var(--amber)}
+  .it.new{animation:arriva .7s ease}
+  @keyframes arriva{from{background:#1F3A2A}to{background:var(--card)}}
+  .it .tx{flex:1;min-width:0}
+  .it .tx b{font-weight:600;display:block;overflow-wrap:anywhere}
+  .it.done .tx{opacity:.45;text-decoration:line-through}
+  .chk{width:18px;height:18px;border-radius:5px;border:2px solid #3D4752;margin-top:2px;flex:none;background:transparent;padding:0}
+  .chk:hover{border-color:var(--greenTx)}
+  .it .tx{cursor:text}
+  .done .chk{background:var(--green);border-color:var(--green)}
+  .num{font:700 13px 'JetBrains Mono',monospace;color:var(--blue)}
+  .pill{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:999px;margin-left:6px;vertical-align:1px;border:1px solid transparent}
+  button.pill:hover{border-color:currentColor}
+  .p1{background:var(--blueBg);color:var(--blue)}
+  .p2{background:var(--amberBg);color:var(--amber)}
+  small{display:block;font-size:12px;color:var(--muted)}
+  small.r{color:var(--amber);font-weight:600}
+
+  /* ----- scheda del + (finestra) ----- */
+  .dim{position:fixed;inset:0;background:rgba(5,8,11,.62);display:flex;align-items:flex-start;justify-content:center;padding-top:12vh;z-index:10}
+  .form{width:min(440px,92vw);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 20px 14px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+  .form h2{font-size:15px;font-weight:700;margin-bottom:14px}
+  .fl{margin-bottom:12px}
+  .fl label{display:block;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+  .fl input{width:100%;background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 11px;outline:none}
+  .fl input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(121,192,255,.15)}
+  .pre{display:flex;align-items:center;background:var(--field);border:1px solid var(--line);border-radius:8px}
+  .pre:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(121,192,255,.15)}
+  .pre span{font:700 15px 'JetBrains Mono',monospace;color:var(--muted);padding-left:11px}
+  .pre input{border:0;box-shadow:none!important;padding-left:4px;font:700 15px 'JetBrains Mono',monospace;color:var(--blue)}
+  .hint{font-size:11.5px;color:var(--amber);margin-top:5px}
+  .seg{display:flex;flex-wrap:wrap;gap:6px}
+  .seg button{background:var(--field);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600}
+  .seg button.on{background:var(--blueBg);color:var(--blue);border-color:#1F4E7A}
+  .seg button.on.am{background:var(--amberBg);color:var(--amber);border-color:#6B4E1A}
+  .err{color:var(--red);font-size:12px;min-height:16px;margin-top:-4px}
+  .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+  .acts .ok{background:var(--green);color:#fff;padding:8px 16px;border-radius:8px;font-weight:600}
+  .acts .no{background:transparent;color:var(--muted);padding:8px 12px;border-radius:8px;font-weight:600}
+  .acts .no:hover{color:var(--ink)}
+  .acts .del{background:transparent;color:var(--red);padding:8px 10px;border-radius:8px;font-weight:600;margin-right:auto}
+  .acts .del:hover{background:rgba(255,123,114,.12)}
+  .adesso{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .keys{font-size:11px;color:#5A6672;margin-top:10px;text-align:right}
+  kbd{font:600 10.5px 'JetBrains Mono',monospace;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--muted)}
+
+  /* ----- storico (pannello da destra) ----- */
+  #pannello{position:fixed;top:0;right:0;bottom:0;width:min(480px,94vw);background:#141A20;border-left:1px solid var(--line);box-shadow:-20px 0 50px rgba(0,0,0,.45);padding:18px 20px 40px;overflow-y:auto;transform:translateX(100%);transition:transform .22s ease;z-index:9;visibility:hidden}
+  #pannello.open{transform:none;visibility:visible}
+  .st-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .st-top h2{font-size:18px;font-weight:700}
+  .back{background:transparent;color:var(--muted);font-weight:600;font-size:13px;padding:4px 0;margin-left:auto}
+  .back:hover{color:var(--ink)}
+  .week{color:var(--muted);font-size:13px}
+  .week b{font:700 15px 'JetBrains Mono',monospace;color:var(--greenTx)}
+  .search{width:100%;background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 11px;outline:none;margin-bottom:10px}
+  .search:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(121,192,255,.15)}
+  #pannello .seg{margin-bottom:16px}
+  .day{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px;display:flex;justify-content:space-between}
+  .day i{font-style:normal;font-weight:600;text-transform:none;letter-spacing:0}
+  .row{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:9px 12px;border-radius:10px;background:var(--card);margin-bottom:5px}
+  .row .h{font:500 12px 'JetBrains Mono',monospace;color:var(--muted)}
+  .row .w{min-width:0;overflow-wrap:anywhere}
+  .row .t2{display:block;font-size:11px;color:var(--muted);font-weight:600}
+  .riapri{background:transparent;color:var(--muted);font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px;opacity:0;transition:opacity .15s}
+  .row:hover .riapri,.riapri:focus{opacity:1}
+  .riapri:hover{background:#2A3440;color:var(--ink)}
+  .empty{color:var(--muted);padding:30px 0;text-align:center}
+
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+
+  /* finestra più stretta: 2 colonne, poi 1 */
+  @media (max-width:1050px){
+    main{grid-template-columns:repeat(2,minmax(0,1fr));overflow-y:auto}
+    .col{min-height:200px}
+    .tiles{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:600px){
+    main{grid-template-columns:1fr}
+    header{padding:12px 16px;gap:8px;flex-wrap:wrap}
+    .tiles,main{padding-left:16px;padding-right:16px}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="pannello" aria-label="Storico"></div>
+
+<script>
+/* ===== Lavoro · app personale (solo su questo computer) =====
+   Dati: solo nella memoria di questo browser (localStorage). Nessun server.
+   Nel codice non c'è niente di privato: né ticket né PIN.
+   Il PIN si sceglie alla prima apertura; se ne salva solo l'impronta (SHA-256), non il numero.
+   Si chiede solo all'apertura; "Blocca" richiude l'app. */
+const KD = "lavoro-dati", KP = "lavoro-pin";
+function leggi(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }
+function scrivi(k,v){ try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+async function impronta(pin){
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("lavoro:" + pin));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+// Tutto quello che scrivi entra nella pagina "pulito": niente codice iniettabile.
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+/* ===== Date ===== */
+const GG = ["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"];
+const mezzanotte = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+const oggi = () => mezzanotte(new Date());
+const giorni = (a, b) => Math.round((mezzanotte(a) - mezzanotte(b)) / 864e5);   // a - b, in giorni
+const ora = iso => new Date(iso).toLocaleTimeString("it-IT", { hour:"2-digit", minute:"2-digit" });
+const chiaveGiorno = d => { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`; };
+const eOggi = iso => !!iso && giorni(iso, new Date()) === 0;
+function nomeGiorno(iso){
+  const n = giorni(iso, new Date()), d = new Date(iso);
+  if(n === 0) return "oggi";
+  if(n === -1) return "ieri";
+  if(n === 1) return "domani";
+  if(Math.abs(n) < 7) return GG[d.getDay()];
+  return d.toLocaleDateString("it-IT", { day:"numeric", month:"numeric" });
+}
+function piuGiorni(n){ const d = oggi(); d.setDate(d.getDate() + n); d.setHours(12); return d.toISOString(); }
+function fineSettimana(){   // venerdì di questa settimana (sabato e domenica: oggi stesso)
+  const g = new Date().getDay(); return piuGiorni(g >= 1 && g <= 5 ? 5 - g : 0);
+}
+
+/* ===== Le quattro liste ===== */
+const NOMI = { 1:"Ticket aperti", 2:"Ticket da aprire", 3:"Mail da mandare", 4:"Altro" };
+const CORTI = { 1:"Ticket aperti", 2:"Da aprire", 3:"Mail", 4:"Altro" };
+const MODULI = {
+  1: { titolo:"Nuovo ticket aperto", campi:[
+        { id:"num", label:"Numero del ticket", tipo:"num" },
+        { id:"nota", label:"Nota breve", ph:"es. Stampante 2° piano" },
+        { id:"stato", label:"Stato", tipo:"seg", scelte:["in corso","in attesa"] } ] },
+  2: { titolo:"Ticket da aprire", campi:[
+        { id:"nota", label:"Cosa hai fatto", ph:"es. Cambio tastiera postazione 8" },
+        { id:"quando", label:"Quando", tipo:"seg", scelte:["oggi","ieri","prima"] } ] },
+  3: { titolo:"Mail da mandare", campi:[
+        { id:"chi", label:"A chi", ph:"es. Reparto acquisti, oppure M.R.", hint:"Solo reparto o iniziali. Mai indirizzi email o nomi completi." },
+        { id:"nota", label:"Oggetto", ph:"es. Conferma intervento" },
+        { id:"quando", label:"Entro", tipo:"seg", scelte:["oggi","domani","questa settimana"] } ] },
+  4: { titolo:"Promemoria", campi:[
+        { id:"nota", label:"Cosa", ph:"es. Ritirare badge nuovo" },
+        { id:"quando", label:"Quando (facoltativo)", tipo:"seg", scelte:["oggi","domani","questa settimana"], libero:true } ] },
+};
+
+/* ===== Stato dell'app ===== */
+const S = { dentro:false, pin1:null, err:"", cose:[], modulo:null, storico:false, filtro:0, cerca:"", nuovo:null, giorno:chiaveGiorno(new Date()) };
+const salva = () => scrivi(KD, S.cose);
+
+// Cosa scrivere sotto una riga, e se è in ritardo
+function dettaglio(c){
+  if(c.fatto) return { r:false, t:(c.l === 3 ? "mandata alle " : "fatto alle ") + ora(c.fatto) };
+  if(c.l === 1){
+    if(c.stato !== "in attesa") return { r:false, t:"" };
+    const n = giorni(new Date(), c.statoDa);
+    return { r:n >= 3, t:n >= 1 ? `in attesa da ${n} giorn${n === 1 ? "o" : "i"}` : "" };
+  }
+  if(c.l === 2){
+    if(c.prima) return { r:true, t:"fatto prima di ieri" };
+    return { r:giorni(new Date(), c.fattoIl) >= 1, t:"fatto " + nomeGiorno(c.fattoIl) };
+  }
+  if(!c.entro) return { r:false, t:"" };
+  const scad = giorni(c.entro, new Date()) < 0;
+  return { r:scad, t:(c.l === 3 ? "entro " : (scad ? "era per " : "")) + nomeGiorno(c.entro) };
+}
+const aperte = l => S.cose.filter(c => c.l === l && !c.fatto);
+function inColonna(l){   // le aperte (in ritardo prima, poi le più nuove) e sotto quelle fatte oggi
+  const a = aperte(l).sort((x, y) => (dettaglio(y).r - dettaglio(x).r) || (y.creato > x.creato ? 1 : -1));
+  const f = S.cose.filter(c => c.l === l && eOggi(c.fatto)).sort((x, y) => y.fatto > x.fatto ? 1 : -1);
+  return a.concat(f);
+}
+
+/* ===== Schermate ===== */
+const app = document.getElementById("app"), pannello = document.getElementById("pannello");
+
+function vLogin(){
+  const fase = !leggi(KP) ? (S.pin1 ? "conferma" : "nuovo") : "entra";
+  const t = {
+    nuovo:   ["Scegli un PIN di 4–8 cifre. Te lo chiede ogni volta che apri l'app.", "Avanti"],
+    conferma:["Scrivi di nuovo il PIN per conferma.", "Salva il PIN"],
+    entra:   ["Ticket, mail e promemoria di lavoro.", "Entra"],
+  }[fase];
+  return `<form class="login" data-form="pin" data-fase="${fase}"><div class="box">
+    <h1>LAVORO</h1><p>${t[0]}</p>
+    <input id="pin" name="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="off" aria-label="PIN" required>
+    <div class="err" style="margin-top:6px">${esc(S.err)}</div>
+    <button class="ok" type="submit">${t[1]}</button>
+    ${fase === "entra" ? `<button type="button" class="link" data-act="dimenticato">Ho dimenticato il PIN</button>` : ""}
+  </div></form>`;
+}
+
+function vRiga(c){
+  const d = dettaglio(c), nuovo = S.nuovo === c.id ? " new" : "";
+  let t = "";
+  if(c.l === 1) t = `<span class="num">#${esc(c.num)}</span>${c.fatto ? `<span class="pill ${c.stato === "in attesa" ? "p2" : "p1"}">${esc(c.stato)}</span>` : `<button class="pill ${c.stato === "in attesa" ? "p2" : "p1"}" data-act="stato" data-id="${c.id}" title="Cambia stato">${esc(c.stato)}</button>`}<b>${esc(c.nota || "—")}</b>`;
+  else if(c.l === 3) t = `<b>${esc([c.chi, c.nota].filter(Boolean).join(" · "))}</b>`;
+  else t = `<b>${esc(c.nota)}</b>`;
+  if(d.t) t += `<small class="${d.r ? "r" : ""}">${esc(d.t)}</small>`;
+  // la casella spunta; il clic sul resto della riga apre la finestra per modificarla
+  return `<div class="it${d.r ? " r" : ""}${c.fatto ? " done" : ""}${nuovo}" data-act="modifica" data-id="${c.id}" tabindex="0" title="Clic per modificare">
+    <button class="chk" data-act="spunta" data-id="${c.id}" role="checkbox" aria-checked="${!!c.fatto}" aria-label="Fatto" title="${c.fatto ? "Togli la spunta" : "Fatto"}"></button><div class="tx">${t}</div></div>`;
+}
+
+function vPlancia(){
+  const data = new Date().toLocaleDateString("it-IT", { weekday:"long", day:"numeric", month:"long" });
+  const ritardo = S.cose.filter(c => !c.fatto && dettaglio(c).r).length;
+  const col = l => {
+    const r = inColonna(l);
+    return `<section class="col"><div class="lh"><span>${NOMI[l]}<i>${aperte(l).length}</i></span><button class="plus" data-act="piu" data-l="${l}" title="Aggiungi">+</button></div>
+      <div class="items">${r.length ? r.map(vRiga).join("") : `<div class="vuoto">Niente qui.</div>`}</div></section>`;
+  };
+  return `<header><h1>LAVORO</h1><span class="d">${data}</span><span class="sp"></span>
+      <button class="ghost${S.storico ? " on" : ""}" data-act="storico">Storico</button>
+      <button class="ghost" data-act="esporta">Esporta</button>
+      <button class="ghost" data-act="blocca">Blocca</button></header>
+    <section class="tiles">
+      <div class="tile"><b>${aperte(1).length}</b><span>Ticket aperti</span></div>
+      <div class="tile"><b>${aperte(2).length}</b><span>Da aprire</span></div>
+      <div class="tile"><b>${aperte(3).length}</b><span>Mail da mandare</span></div>
+      <div class="tile warn"><b>${ritardo}</b><span>In ritardo</span></div>
+    </section>
+    <main>${[1,2,3,4].map(col).join("")}</main>
+    ${S.modulo ? vModulo(S.modulo) : ""}`;
+}
+
+function vModulo(m){
+  const def = MODULI[m.l];
+  const campo = c => {
+    let x = `<div class="fl"><label${c.tipo === "seg" ? "" : ` for="f-${c.id}"`}>${c.label}</label>`;
+    if(c.tipo === "seg") x += `<div class="seg" data-id="${c.id}">${c.scelte.map(s =>
+        `<button type="button" class="${m.v[c.id] === s ? "on" : ""}${s === "in attesa" ? " am" : ""}" data-act="scelta" data-c="${c.id}" data-v="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
+    else if(c.tipo === "num") x += `<div class="pre"><span>#</span><input id="f-${c.id}" name="${c.id}" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="10458" value="${esc(m.v[c.id])}"></div>`;
+    else x += `<input id="f-${c.id}" name="${c.id}" maxlength="80" autocomplete="off" placeholder="${esc(c.ph)}" value="${esc(m.v[c.id])}">`;
+    if(c.hint) x += `<div class="hint">${esc(c.hint)}</div>`;
+    if(c.id === "quando" && m.id && !m.toccato.quando && !m.v.quando && m.adesso) x += `<div class="adesso">Adesso: ${esc(m.adesso)}. Scegli solo se vuoi cambiarlo.</div>`;
+    return x + `</div>`;
+  };
+  return `<div class="dim" data-act="chiudiFuori"><form class="form" data-form="cosa" autocomplete="off">
+    <h2>${m.id ? "Modifica · " + NOMI[m.l] : def.titolo}</h2>${def.campi.map(campo).join("")}
+    <div class="err">${esc(S.err)}</div>
+    <div class="acts">${m.id ? `<button type="button" class="del" data-act="elimina">Elimina</button>` : ""}<button type="button" class="no" data-act="annulla">Annulla</button><button type="submit" class="ok">Salva</button></div>
+    <div class="keys"><kbd>Invio</kbd> salva · <kbd>Esc</kbd> annulla</div>
+  </form></div>`;
+}
+
+function vStorico(){
+  const fatte = S.cose.filter(c => c.fatto).sort((x, y) => y.fatto > x.fatto ? 1 : -1);
+  const sett = fatte.filter(c => giorni(new Date(), c.fatto) < 7).length;
+  const q = S.cerca.trim().toLowerCase();
+  const vis = fatte.filter(c => (!S.filtro || c.l === S.filtro) &&
+    (!q || [c.num, c.nota, c.chi].join(" ").toLowerCase().includes(q)));
+  let html = "", ultimo = null;
+  for(const c of vis){
+    const k = chiaveGiorno(c.fatto);
+    if(k !== ultimo){
+      ultimo = k;
+      const n = fatte.filter(x => chiaveGiorno(x.fatto) === k).length;
+      const g = giorni(new Date(), c.fatto);
+      const data = new Date(c.fatto).toLocaleDateString("it-IT", { weekday:"long", day:"numeric", month:"long" });
+      html += `<div class="day">${g === 0 ? "Oggi · " : g === 1 ? "Ieri · " : ""}${data}<i>${n} fatt${n === 1 ? "a" : "e"}</i></div>`;
+    }
+    const testo = c.l === 3 ? [c.chi, c.nota].filter(Boolean).join(" · ") : c.nota;
+    html += `<div class="row"><span class="h">${ora(c.fatto)}</span><span class="w">${c.l === 1 ? `<span class="num">#${esc(c.num)}</span>  ` : ""}${esc(testo)}<span class="t2">${CORTI[c.l]}</span></span>
+      <button class="riapri" data-act="riapri" data-id="${c.id}" title="Rimettilo nella sua lista">Riapri</button></div>`;
+  }
+  if(!vis.length) html = `<div class="empty">${fatte.length ? "Niente trovato." : "Qui finiscono le cose che spunti."}</div>`;
+  return html;
+}
+function apriStorico(){
+  S.storico = true;
+  pannello.innerHTML = `<div class="st-top"><h2>Storico</h2>
+      <span class="week">Ultimi 7 giorni: <b id="sett"></b> cose fatte</span>
+      <button class="back" data-act="storico">Chiudi ✕</button></div>
+    <input class="search" id="cerca" placeholder="Cerca un numero di ticket o una parola" autocomplete="off" value="${esc(S.cerca)}">
+    <div class="seg">${["Tutto","Ticket aperti","Da aprire","Mail","Altro"].map((n, i) =>
+      `<button type="button" class="${i === S.filtro ? "on" : ""}" data-act="filtro" data-i="${i}">${n}</button>`).join("")}</div>
+    <div id="elenco"></div>`;
+  aggiornaStorico();
+  pannello.classList.add("open");
+  setTimeout(() => document.getElementById("cerca")?.focus(), 60);
+}
+function aggiornaStorico(){
+  if(!S.storico) return;
+  document.getElementById("sett").textContent = S.cose.filter(c => c.fatto && giorni(new Date(), c.fatto) < 7).length;
+  document.getElementById("elenco").innerHTML = vStorico();
+}
+function chiudiStorico(){ S.storico = false; pannello.classList.remove("open"); pannello.innerHTML = ""; }
+
+function disegna(){
+  if(!S.dentro){ app.innerHTML = vLogin(); document.getElementById("pin")?.focus(); return; }
+  const fuoco = document.activeElement?.id;   // per non perdere il cursore nel modulo
+  app.innerHTML = vPlancia();
+  aggiornaStorico();
+  if(S.modulo){
+    const f = document.getElementById(fuoco) || app.querySelector(".form input");
+    f?.focus();
+  }
+  S.nuovo = null;
+}
+
+function toast(t){
+  document.querySelector(".toast")?.remove();
+  const d = document.createElement("div"); d.className = "toast"; d.textContent = t;
+  document.body.appendChild(d); setTimeout(() => d.remove(), 2200);
+}
+
+/* ===== Azioni ===== */
+function entra(){ S.dentro = true; S.cose = leggi(KD) || []; S.err = ""; S.giorno = chiaveGiorno(new Date()); disegna(); }
+function blocca(){ chiudiStorico(); S.dentro = false; S.cose = []; S.modulo = null; S.err = ""; S.pin1 = null; disegna(); }
+
+function leggiModulo(){   // quello che hai scritto resta anche se ridisegno
+  if(!S.modulo) return;
+  app.querySelectorAll(".form input").forEach(i => S.modulo.v[i.name] = i.value);
+}
+function apriModulo(l){
+  const v = {};
+  MODULI[l].campi.forEach(c => { if(c.tipo === "seg" && !c.libero) v[c.id] = c.scelte[0]; });
+  S.modulo = { l, v, toccato:{} }; S.err = ""; disegna();
+}
+function apriModifica(c){   // la stessa finestra del +, già compilata
+  const v = { num:c.num || "", nota:c.nota || "", chi:c.chi || "", stato:c.stato || "", quando:"" };
+  if(c.l === 2){
+    const n = c.prima ? 2 : giorni(new Date(), c.fattoIl);
+    v.quando = n === 0 ? "oggi" : n === 1 ? "ieri" : "prima";
+  }
+  if(c.l >= 3 && c.entro){
+    const n = giorni(c.entro, new Date());
+    v.quando = n === 0 ? "oggi" : n === 1 ? "domani" : (chiaveGiorno(c.entro) === chiaveGiorno(fineSettimana()) ? "questa settimana" : "");
+  }
+  const adesso = c.l >= 3 && c.entro ? dettaglio({ ...c, fatto:null }).t : "";
+  S.modulo = { l:c.l, v, toccato:{}, id:c.id, adesso }; S.err = ""; disegna();
+}
+const quandoA = q => ({ oggi:piuGiorni(0), domani:piuGiorni(1) })[q] || fineSettimana();
+
+function salvaModulo(){
+  leggiModulo();
+  if(S.modulo.id) return salvaModifica();
+  const { l, v } = S.modulo, t = k => String(v[k] || "").trim();
+  const c = { id:Date.now().toString(36) + Math.random().toString(36).slice(2, 6), l, creato:new Date().toISOString(), fatto:null, nota:t("nota") };
+  if(l === 1){
+    const num = t("num").replace(/\D/g, "");
+    if(!num){ S.err = "Scrivi il numero del ticket (solo cifre)."; return disegna(); }
+    if(aperte(1).some(x => x.num === num)){ S.err = `Il #${num} è già tra i ticket aperti.`; return disegna(); }
+    Object.assign(c, { num, stato:v.stato || "in corso", statoDa:c.creato });
+  } else if(l === 2){
+    if(!c.nota){ S.err = "Scrivi cosa hai fatto."; return disegna(); }
+    if(v.quando === "prima") c.prima = true;
+    else c.fattoIl = v.quando === "ieri" ? piuGiorni(-1) : c.creato;
+  } else if(l === 3){
+    c.chi = t("chi");
+    if(/@/.test(c.chi)){ S.err = "Niente indirizzi email: scrivi il reparto o le iniziali."; return disegna(); }
+    if(!c.chi && !c.nota){ S.err = "Scrivi a chi e l'oggetto."; return disegna(); }
+    c.entro = { oggi:piuGiorni(0), domani:piuGiorni(1) }[v.quando] || fineSettimana();
+  } else {
+    if(!c.nota){ S.err = "Scrivi cosa."; return disegna(); }
+    if(v.quando) c.entro = { oggi:piuGiorni(0), domani:piuGiorni(1) }[v.quando] || fineSettimana();
+  }
+  S.cose.push(c);
+  if(!salva()){ S.cose.pop(); S.err = "Non salvato: la memoria del browser è piena o bloccata."; return disegna(); }
+  S.modulo = null; S.err = ""; S.nuovo = c.id; disegna();
+  toast(`Salvato · ${CORTI[l]}`);
+}
+
+function salvaModifica(){
+  const { l, v, id, toccato } = S.modulo, t = k => String(v[k] || "").trim();
+  const c = S.cose.find(x => x.id === id);
+  if(!c){ S.modulo = null; return disegna(); }
+  const prima = JSON.stringify(c), nuovo = { ...c, nota:t("nota") };
+  if(l === 1){
+    const num = t("num").replace(/\D/g, "");
+    if(!num){ S.err = "Scrivi il numero del ticket (solo cifre)."; return disegna(); }
+    if(aperte(1).some(x => x.num === num && x.id !== id)){ S.err = `Il #${num} è già tra i ticket aperti.`; return disegna(); }
+    nuovo.num = num;
+    if(v.stato && v.stato !== c.stato){ nuovo.stato = v.stato; nuovo.statoDa = new Date().toISOString(); }
+  } else if(l === 2){
+    if(!nuovo.nota){ S.err = "Scrivi cosa hai fatto."; return disegna(); }
+    if(toccato.quando){
+      delete nuovo.prima; delete nuovo.fattoIl;
+      if(v.quando === "prima") nuovo.prima = true;
+      else nuovo.fattoIl = v.quando === "ieri" ? piuGiorni(-1) : piuGiorni(0);
+    }
+  } else if(l === 3){
+    nuovo.chi = t("chi");
+    if(/@/.test(nuovo.chi)){ S.err = "Niente indirizzi email: scrivi il reparto o le iniziali."; return disegna(); }
+    if(!nuovo.chi && !nuovo.nota){ S.err = "Scrivi a chi e l'oggetto."; return disegna(); }
+    if(toccato.quando && v.quando) nuovo.entro = quandoA(v.quando);
+  } else {
+    if(!nuovo.nota){ S.err = "Scrivi cosa."; return disegna(); }
+    if(toccato.quando){ if(v.quando) nuovo.entro = quandoA(v.quando); else delete nuovo.entro; }
+  }
+  Object.keys(c).forEach(k => delete c[k]); Object.assign(c, nuovo);
+  if(!salva()){ Object.assign(c, JSON.parse(prima)); S.err = "Non salvato: la memoria del browser è piena o bloccata."; return disegna(); }
+  S.modulo = null; S.err = ""; S.nuovo = c.id; disegna();
+  toast("Modificato");
+}
+
+function elimina(){
+  const c = S.cose.find(x => x.id === S.modulo?.id); if(!c) return;
+  const nome = c.l === 1 ? "#" + c.num : (c.l === 3 ? [c.chi, c.nota].filter(Boolean).join(" · ") : c.nota);
+  if(!confirm(`Eliminare "${nome}"?\nNon va nello storico e non si recupera.`)) return;
+  const resto = S.cose.filter(x => x !== c);
+  if(!scrivi(KD, resto)){ S.err = "Non eliminato: la memoria del browser è bloccata."; return disegna(); }
+  S.cose = resto; S.modulo = null; S.err = ""; disegna(); aggiornaStorico();
+  toast("Eliminato");
+}
+
+/* ===== Esporta: un file CSV con tutto (si apre con Excel o Numbers) ===== */
+function esporta(){
+  if(!S.cose.length){ toast("Niente da esportare"); return; }
+  const q = v => { let s = String(v ?? ""); if(/^[=+\-@]/.test(s)) s = "'" + s; return `"${s.replace(/"/g, '""')}"`; };   // niente formule nascoste nel foglio
+  const dt = iso => iso ? `${new Date(iso).toLocaleDateString("it-IT")} ${ora(iso)}` : "";
+  const righe = [["Lista","Numero","Testo","A chi","Stato","Creato il","Fatto il (da aprire)","Entro","Fatto"]];
+  for(const c of [...S.cose].sort((x, y) => x.creato > y.creato ? 1 : -1)) righe.push([
+    NOMI[c.l], c.num || "", c.nota || "", c.chi || "", c.stato || "", dt(c.creato),
+    c.l === 2 ? (c.prima ? "prima" : new Date(c.fattoIl).toLocaleDateString("it-IT")) : "",
+    c.entro ? new Date(c.entro).toLocaleDateString("it-IT") : "", dt(c.fatto) ]);
+  const testo = "﻿" + righe.map(r => r.map(q).join(";")).join("\r\n");
+  const nome = `lavoro-${chiaveGiorno(new Date())}.csv`;
+  const url = URL.createObjectURL(new Blob([testo], { type:"text/csv" })), a = document.createElement("a");
+  a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast(`Esportato · ${nome}`);
+}
+
+/* ===== Eventi ===== */
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act]"); if(!b) return;
+  const a = b.dataset.act;
+  if(a === "chiudiFuori"){ if(ev.target === b){ S.modulo = null; S.err = ""; disegna(); } return; }
+  if(a === "piu") apriModulo(+b.dataset.l);
+  if(a === "annulla"){ S.modulo = null; S.err = ""; disegna(); }
+  if(a === "scelta"){
+    leggiModulo();
+    const def = MODULI[S.modulo.l].campi.find(c => c.id === b.dataset.c);
+    S.modulo.v[b.dataset.c] = (def.libero && S.modulo.v[b.dataset.c] === b.dataset.v) ? "" : b.dataset.v;
+    S.modulo.toccato[b.dataset.c] = true;
+    disegna();
+  }
+  if(a === "modifica"){
+    if(window.getSelection()?.toString()) return;   // se stai selezionando il testo per copiarlo, non apre
+    const c = S.cose.find(x => x.id === b.dataset.id); if(c) apriModifica(c);
+  }
+  if(a === "elimina") elimina();
+  if(a === "stato"){
+    ev.stopPropagation();
+    const c = S.cose.find(x => x.id === b.dataset.id); if(!c) return;
+    c.stato = c.stato === "in attesa" ? "in corso" : "in attesa"; c.statoDa = new Date().toISOString();
+    salva(); disegna();
+    return;
+  }
+  if(a === "spunta"){
+    ev.stopPropagation();
+    const c = S.cose.find(x => x.id === b.dataset.id); if(!c) return;
+    c.fatto = c.fatto ? null : new Date().toISOString();
+    salva(); disegna();
+  }
+  if(a === "riapri"){
+    const c = S.cose.find(x => x.id === b.dataset.id); if(!c) return;
+    c.fatto = null; salva(); S.nuovo = c.id; disegna(); toast(`Rimesso in ${CORTI[c.l]}`);
+  }
+  if(a === "storico") S.storico ? chiudiStorico() : apriStorico();
+  if(a === "filtro"){ S.filtro = +b.dataset.i; pannello.querySelectorAll(".seg button").forEach((x, i) => x.classList.toggle("on", i === S.filtro)); aggiornaStorico(); }
+  if(a === "esporta") esporta();
+  if(a === "blocca") blocca();
+  if(a === "dimenticato"){
+    if(!confirm("Senza il PIN i dati non si possono riaprire. Vuoi cancellare tutto quello che è salvato e scegliere un PIN nuovo?")) return;
+    if(!confirm("Sicuro? Quello che è cancellato non si recupera. (Se hai un file Esportato, quello resta.)")) return;
+    scrivi(KD, null); scrivi(KP, null); blocca();
+  }
+});
+
+document.addEventListener("input", ev => {
+  if(ev.target.id === "cerca"){ S.cerca = ev.target.value; aggiornaStorico(); }
+  if(ev.target.id === "f-num") ev.target.value = ev.target.value.replace(/\D/g, "");
+});
+
+document.addEventListener("keydown", ev => {
+  if(ev.key === "Escape"){
+    if(S.modulo){ S.modulo = null; S.err = ""; disegna(); }
+    else if(S.storico) chiudiStorico();
+  }
+  if((ev.key === "Enter" || ev.key === " ") && ev.target.classList?.contains("it")){ ev.preventDefault(); ev.target.click(); }
+});
+
+document.addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const f = ev.target;
+  if(f.dataset.form === "cosa") return salvaModulo();
+  if(f.dataset.form === "pin"){
+    const v = f.pin.value.trim(), fase = f.dataset.fase;
+    S.err = "";
+    if(!/^\d{4,8}$/.test(v)){ S.err = "Il PIN è fatto di 4–8 cifre."; return disegna(); }
+    if(fase === "nuovo"){ S.pin1 = v; return disegna(); }
+    if(fase === "conferma"){
+      if(v !== S.pin1){ S.pin1 = null; S.err = "I due PIN non sono uguali: ricomincia."; return disegna(); }
+      if(!scrivi(KP, await impronta(v))){ S.pin1 = null; S.err = "La memoria del browser è bloccata: il PIN non si salva."; return disegna(); }
+      S.pin1 = null; return entra();
+    }
+    if(await impronta(v) === leggi(KP)) entra();
+    else { S.err = "PIN sbagliato."; disegna(); }
+  }
+});
+
+/* Aperta tutto il giorno: a mezzanotte le cose fatte passano nello storico e i ritardi si ricalcolano. */
+function controllaGiorno(){
+  const k = chiaveGiorno(new Date());
+  if(S.dentro && k !== S.giorno){ S.giorno = k; leggiModulo(); disegna(); }
+}
+setInterval(controllaGiorno, 60 * 1000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) controllaGiorno(); });
+
+disegna();   // a ogni apertura: PIN
+</script>
+</body>
+</html>
